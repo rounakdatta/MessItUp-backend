@@ -93,6 +93,34 @@ app.get('/logout', function(req, res) {
 	return res.send("200 OK : Logged out successfully");
 });
 
+// get hostels data
+app.get('/get/hostel/:gender', function(req, res) {
+
+  var messData = [];
+
+  db.ref().child('hostels').child(req.params.gender).once('value')
+  .then( snapshot => {
+    snapshot.forEach(function(childSnapshot) {
+    	let newJSON = {};
+    	newJSON["hostelName"] = childSnapshot.key;
+    	newJSON["messName"] = childSnapshot.val();
+    	messData.push(newJSON);
+    });
+    return res.send(messData);
+  });
+
+});
+
+// get mess menu data
+app.get('/get/mess/menu', function(req, res) {
+
+  db.ref().child("mess").child("menu").once("value")
+  .then( snapshot => {
+    return res.send(snapshot);
+  });
+
+});
+
 // register API (irrelevant)
 app.get('/register', function(req, res) {
 	if (req.body.uid.length == 28) {
@@ -108,6 +136,19 @@ app.post('/register', function(req, res) {
 
 	auth.createUserWithEmailAndPassword(email, pwd)
 	.then(function(userData) {
+
+    var registerData = {
+      'studentName': req.body.studentName,
+      'studentEmail': req.body.email,
+      'hostelName': req.body.hostelName,
+      'studyYear': req.body.studyYear,
+      'messName': req.body.messName
+    };
+
+    db.ref().child('data').child(req.body.messName).child(req.body.hostelName).push().set(registerData);
+
+
+
 		console.log('registering and logging in');
 		res.cookie('currentUser', auth.currentUser);
 		return res.send(auth.currentUser);
