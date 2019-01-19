@@ -1,21 +1,21 @@
 {
-  "name": "worthmeals-backend",
+  "name": "messitup-backend",
   "version": "1.0.0",
-  "description": "The Backend Infrastructure for WorthMeals",
+  "description": "The Backend Infrastructure for MessItUp",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/rounakdatta/WorthMeals-backend.git"
+    "url": "git+https://github.com/rounakdatta/MessItUp-backend.git"
   },
   "author": "Rounak Datta",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/rounakdatta/WorthMeals-backend/issues"
+    "url": "https://github.com/rounakdatta/MessItUp-backend/issues"
   },
-  "homepage": "https://github.com/rounakdatta/WorthMeals-backend#readme",
+  "homepage": "https://github.com/rounakdatta/MessItUp-backend#readme",
   "dependencies": {
     "cookie-parser": "^1.4.3",
     "dotenv": "^6.2.0",

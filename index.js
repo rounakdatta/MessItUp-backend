@@ -38,9 +38,9 @@ function rememberMyServer(uri) {
  	});
 }
 
-var keepalive = schedule.scheduleJob('*/10 * * * *', function() {
+var keepalive = schedule.scheduleJob('*/2 * * * *', function() {
 
-	var allMyServers = ['https://repl1.hostelroo.ml', 'https://repl2.hostelroo.ml', 'https://repl3.hostelroo.ml', 'https://repl4.hostelroo.ml'];
+	var allMyServers = ['https://DearestDaringApplescript--rounak.repl.co'];
 	for(var i = 0; i < allMyServers.length; i++) {
 		rememberMyServer(allMyServers[i]);
 	}
@@ -78,7 +78,7 @@ app.use(express.static(__dirname + '/views/web/public'));
 
 // app cookie-parser config
 app.use(cookieParser());
-app.use(session({secret: 'wOrThMeAlS'}));
+app.use(session({secret: 'mEsSiTuP'}));
 
 // APIs start here
 // home page
@@ -90,12 +90,12 @@ app.get('/', (req, res) => {
 app.get('/logout', function(req, res) {
 	auth.signOut();
 	res.clearCookie('currentUser');
-	return res.redirect('/');
+	return res.send("200 OK : Logged out successfully");
 });
 
-// register API
+// register API (irrelevant)
 app.get('/register', function(req, res) {
-	if (req.cookies.currentUser) {
+	if (req.body.uid.length == 28) {
 		return res.redirect('/userdashboard');
 	} else {
 		return res.send('200 OK : Please register');
@@ -110,18 +110,16 @@ app.post('/register', function(req, res) {
 	.then(function(userData) {
 		console.log('registering and logging in');
 		res.cookie('currentUser', auth.currentUser);
-		return res.redirect('/userdashboard');
+		return res.send(auth.currentUser);
 	})
 	.catch(function(error) {
 		if (error) {
-			console.log(error.message);
-			console.log(error);
-			return res.redirect('/');
+      return res.send(error);
 		}
 	});
 });
 
-// login API
+// login API (irrelevant)
 app.get('/login', function(req, res) {
 	if (req.cookies.currentUser) {
 		return res.redirect('/userdashboard');
@@ -138,13 +136,7 @@ app.post('/login', function(req, res) {
 	.then(function(userData) {
 		console.log('logging in');
 		res.cookie('currentUser', auth.currentUser);
-
-		if (req.query['redirect'] != null) {
-			var finalURL = req.query['redirect'].replace(/\s/g, "/");
-			return res.redirect(finalURL);
-		}
-
-		return res.redirect('/userdashboard');
+		return res.send(auth.currentUser);
 	})
 	.catch(function(error) {
 		if (error) {
@@ -155,8 +147,8 @@ app.post('/login', function(req, res) {
 });
 
 // user dashboard
-app.get('/userdashboard', function(req, res) {
-	if (req.cookies.currentUser) {
+app.post('/userdashboard', function(req, res) {
+	if (req.body.uid.length == 28) {
 		return res.send('200 OK : Welcome to Dashboard');
 	} else {
 		return res.send('Error 401 : Unauthorized');
@@ -167,5 +159,5 @@ app.get('/userdashboard', function(req, res) {
 var server = http.createServer(app);
 
 server.listen(4000, function () {
-  console.log('Port 4000 - WorthMeals')
+  console.log('Port 4000 - MessItUp')
 });
