@@ -31,19 +31,19 @@ var auth = fbapp.auth();
 
 // keepalive ping hacks
 function rememberMyServer(uri) {
- 	https.get(uri, (resp) => {
- 		console.log(uri + ' - alive!');
- 	}).on('error', (err) => {
- 		console.log(uri + ' - dead! emergency!');
- 	});
+  https.get(uri, (resp) => {
+    console.log(uri + ' - alive!');
+  }).on('error', (err) => {
+    console.log(uri + ' - dead! emergency!');
+  });
 }
 
 var keepalive = schedule.scheduleJob('*/2 * * * *', function() {
 
-	var allMyServers = ['https://DearestDaringApplescript--rounak.repl.co'];
-	for(var i = 0; i < allMyServers.length; i++) {
-		rememberMyServer(allMyServers[i]);
-	}
+  var allMyServers = ['https://DearestDaringApplescript--rounak.repl.co'];
+  for(var i = 0; i < allMyServers.length; i++) {
+    rememberMyServer(allMyServers[i]);
+  }
 })
 
 // app body-parser config
@@ -80,6 +80,16 @@ app.use(express.static(__dirname + '/views/web/public'));
 app.use(cookieParser());
 app.use(session({secret: 'mEsSiTuP'}));
 
+var num2week = {
+  "1": "Monday",
+  "2": "Tuesday",
+  "3": "Wednesday",
+  "4": "Thursday",
+  "5": "Friday",
+  "6": "Saturday",
+  "7": "Sunday"
+};
+
 // APIs start here
 // home page
 app.get('/', (req, res) => {
@@ -88,9 +98,9 @@ app.get('/', (req, res) => {
 
 // logout API
 app.get('/logout', function(req, res) {
-	auth.signOut();
-	res.clearCookie('currentUser');
-	return res.send("200 OK : Logged out successfully");
+  auth.signOut();
+  res.clearCookie('currentUser');
+  return res.send("200 OK : Logged out successfully");
 });
 
 // get hostels data
@@ -101,10 +111,10 @@ app.get('/get/hostel/:gender', function(req, res) {
   db.ref().child('hostels').child(req.params.gender).once('value')
   .then( snapshot => {
     snapshot.forEach(function(childSnapshot) {
-    	let newJSON = {};
-    	newJSON["hostelName"] = childSnapshot.key;
-    	newJSON["messName"] = childSnapshot.val();
-    	messData.push(newJSON);
+      let newJSON = {};
+      newJSON["hostelName"] = childSnapshot.key;
+      newJSON["messName"] = childSnapshot.val();
+      messData.push(newJSON);
     });
     return res.send(messData);
   });
@@ -112,32 +122,57 @@ app.get('/get/hostel/:gender', function(req, res) {
 });
 
 // get mess menu data
-app.get('/get/mess/menu', function(req, res) {
+app.get('/get/mess/menu/:day', function(req, res) {
 
-  db.ref().child("mess").child("menu").once("value")
+  let today = num2week[req.params.day];
+
+  db.ref().child("mess").child("menu").child(today).once("value")
   .then( snapshot => {
     return res.send(snapshot);
   });
 
 });
 
+// collect feedback
+app.post('/user/feedback/mess/food', function(req, res) {
+  if (req.body.uid.length == 28) {
+    
+    var feedbackData = {
+      'foodQuality': req.body.foodQuality,
+      'foodAvailability': req.body.foodAvailability,
+      'foodTaste': req.body.foodTaste
+    };
+
+    db.ref().child('data').child(req.body.uid).child('feedback').child('customTime').set(feedbackData)
+    .catch(function(error) {
+      console.log(error);
+    })
+
+    return res.send('Success');
+
+  } else {
+    return res.send('Error 401 : Unauthorized');
+  }
+})
+
 // register API (irrelevant)
 app.get('/register', function(req, res) {
-	if (req.body.uid.length == 28) {
-		return res.redirect('/userdashboard');
-	} else {
-		return res.send('200 OK : Please register');
-	}
+  if (req.body.uid.length == 28) {
+    return res.redirect('/userdashboard');
+  } else {
+    return res.send('200 OK : Please register');
+  }
 });
 
 app.post('/register', function(req, res) {
-	var email = req.body.email;
-	var pwd = req.body.pwd;
+  var email = req.body.email;
+  var pwd = req.body.pwd;
 
-	auth.createUserWithEmailAndPassword(email, pwd)
-	.then(function(userData) {
+  auth.createUserWithEmailAndPassword(email, pwd)
+  .then(function(userData) {
 
     var registerData = {
+      'studentId': auth.currentUser['uid'],
       'studentName': req.body.studentName,
       'studentEmail': req.body.email,
       'hostelName': req.body.hostelName,
@@ -145,55 +180,56 @@ app.post('/register', function(req, res) {
       'messName': req.body.messName
     };
 
-    db.ref().child('data').child(req.body.messName).child(req.body.hostelName).push().set(registerData);
+    db.ref().child('data').child(auth.currentUser['uid']).set(registerData);
 
 
 
-		console.log('registering and logging in');
-		res.cookie('currentUser', auth.currentUser);
-		return res.send(auth.currentUser);
-	})
-	.catch(function(error) {
-		if (error) {
+    console.log('registering and logging in');
+    res.cookie('currentUser', auth.currentUser);
+    return res.send(auth.currentUser);
+  })
+  .catch(function(error) {
+    if (error) {
+      console.log(error);
       return res.send(error);
-		}
-	});
+    }
+  });
 });
 
 // login API (irrelevant)
 app.get('/login', function(req, res) {
-	if (req.cookies.currentUser) {
-		return res.redirect('/userdashboard');
-	} else {
-		return res.send('200 OK : Please login');;
-	}
+  if (req.cookies.currentUser) {
+    return res.redirect('/userdashboard');
+  } else {
+    return res.send('200 OK : Please login');;
+  }
 });
 
 app.post('/login', function(req, res) {
-	var email = req.body.email;
-	var pwd = req.body.pwd;
+  var email = req.body.email;
+  var pwd = req.body.pwd;
 
-	auth.signInWithEmailAndPassword(email, pwd)
-	.then(function(userData) {
-		console.log('logging in');
-		res.cookie('currentUser', auth.currentUser);
-		return res.send(auth.currentUser);
-	})
-	.catch(function(error) {
-		if (error) {
-			console.log(error.message);
-			return res.send('Error 404 : Wrong credentials')
-		}
-	});
+  auth.signInWithEmailAndPassword(email, pwd)
+  .then(function(userData) {
+    console.log('logging in');
+    res.cookie('currentUser', auth.currentUser);
+    return res.send(auth.currentUser);
+  })
+  .catch(function(error) {
+    if (error) {
+      console.log(error.message);
+      return res.send('Error 404 : Wrong credentials')
+    }
+  });
 });
 
 // user dashboard
 app.post('/userdashboard', function(req, res) {
-	if (req.body.uid.length == 28) {
-		return res.send('200 OK : Welcome to Dashboard');
-	} else {
-		return res.send('Error 401 : Unauthorized');
-	}
+  if (req.body.uid.length == 28) {
+    return res.send('200 OK : Welcome to Dashboard');
+  } else {
+    return res.send('Error 401 : Unauthorized');
+  }
 });
 
 // server settings
