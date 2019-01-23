@@ -162,7 +162,7 @@ app.post('/user/feedback/mess/food', function(req, res) {
   }
 });
 
-// collect feedback
+// if the user is going for mess
 app.post('/user/meal/opinion', function(req, res) {
   if (req.body.uid.length == 28) {
     
@@ -170,6 +170,7 @@ app.post('/user/meal/opinion', function(req, res) {
       'mealType': req.body.mealType,
       'mealTime': req.body.mealTime,
       'going': req.body.going,
+      'reason': req.body.reason,
     };
 
     var currentTime = new Date();
