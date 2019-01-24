@@ -125,11 +125,22 @@ app.get('/get/hostel/:gender', function(req, res) {
 app.get('/get/mess/menu/:day', function(req, res) {
 
   let today = num2week[req.params.day];
+  var menuData = [];
 
   db.ref().child("mess").child("menu").child(today).once("value")
   .then( snapshot => {
-    return res.send(snapshot);
+    snapshot.forEach(function(childSnapshot) {
+      let newJSON = {};
+      newJSON["mealType"] = childSnapshot.key;
+      newJSON["menu"] = childSnapshot.val();
+
+      menuData.push(newJSON);
+    });
+
+    return res.send(menuData);
   });
+
+
 
 });
 
