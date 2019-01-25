@@ -151,7 +151,8 @@ app.post('/user/feedback/mess/food', function(req, res) {
     var feedbackData = {
       'foodQuality': req.body.foodQuality,
       'foodAvailability': req.body.foodAvailability,
-      'foodTaste': req.body.foodTaste
+      'foodTaste': req.body.foodTaste,
+      'mealType': req.body.mealType
     };
 
     var currentTime = new Date();
